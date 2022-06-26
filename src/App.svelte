@@ -13,7 +13,7 @@
     "  \\__ \\ | / / _ \\/ / __/ _ \\     / / / _ \\/ ___/ __ `__ \\/ / __ \\/ __ `/ /",
     " ___/ / |/ /  __/ / /_/  __/    / / /  __/ /  / / / / / / / / / / /_/ / /",
     "/____/|___/\\___/_/\\__/\\___/    /_/  \\___/_/  /_/ /_/ /_/_/_/ /_/\\__,_/_/",
-    "<span class='text-[#EBCB8B]'>__________________________________________________________________________</span>",
+    "<span class='text-[#81A1C1]'>__________________________________________________________________________</span>",
     "                                                       <span class='glow'>@github/nico-mayer</span>",
     "<span class='text-[#EBCB8B]'>Type <span class='glow'>'help'</span> to ger a list of all available commands.",
   ]
@@ -209,8 +209,8 @@
           bind:value={usrPwInput}
           bind:this={pwInput}
           on:keydown={handlePwCheck}
-          class="flex flex-1 bg-transparent outline-none pl-4 text-[#5E81AC] "
-          type="text"
+          class="flex flex-1 bg-transparent outline-none pl-4 text-[#A3BE8C] "
+          type="password"
         />
       </div>
     {/if}
