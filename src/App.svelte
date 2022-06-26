@@ -30,6 +30,7 @@
   let pwMode = false
   let password = "adminPW"
   let usrPwInput = ""
+
   // Functions
 
   function addLine(text, style) {
@@ -56,15 +57,13 @@
   }
 
   function renderOutput(data) {
-    addLine(`${cmdTitle} ${cmd}`, ["m-0", "whitespace-pre"])
-
     if (data) {
       for (let i = 0; i < data.output.length; i++) {
         addLine(data.output[i], ["line", "pl-4", "text-[#EBCB8B]"])
       }
     } else {
       let t = `<span class='text-[#BF616A]'>'${cmd}'</span> is a invalid command, type <span class='glow'>'help'</span> to see a list of available commands.`
-      addLine(t, ["line", "pl-4", "text-[#B48EAD]", "mb-2"])
+      addLine(t, ["line", "pl-4", "text-[#B48EAD]"])
     }
   }
 
@@ -95,12 +94,12 @@
         preCmds.push(cmd)
       }
       preCmdsIndex = 0
+      addLine(`${cmdTitle} ${cmd}`, ["line"])
       switch (cmd.toLowerCase()) {
         default:
           renderOutput(null)
           break
         case "":
-          addLine(`${cmdTitle} ${cmd}`, ["m-0", "whitespace-pre"])
           break
         case "help":
           renderOutput(commands.help)
@@ -116,31 +115,28 @@
           openLink("https://github.com/Nico-Mayer/svelte-terminal")
           break
         case "banner":
-          addLine(`${cmdTitle} ${cmd}`, ["line"])
           renderBanner()
           break
         case "admin":
           if (!admin) {
-            addLine(`${cmdTitle} ${cmd}`, ["line"])
             pwMode = true
             setTimeout(() => pwInput.focus(), 1)
           } else {
-            addLine(`${cmdTitle} ${cmd}`, ["line"])
-            addLine("u are already admin", ["line", "pl-4"])
+            addLine("u are already admin", ["line", "pl-4", "text-[#B48EAD]"])
           }
 
           break
         case "sudo":
           if (admin) {
-            addLine("execute rickroll...", ["line", "glow"])
+            addLine("execute rickroll...", ["line", "glow", "pl-4"])
             setTimeout(() => {
               openLink("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
             }, 2000)
           } else {
-            addLine(`${cmdTitle} ${cmd}`, ["line"])
             addLine("you need admin rights to use this command", [
               "line",
               "text-[#BF616A]",
+              "pl-4",
             ])
           }
 
