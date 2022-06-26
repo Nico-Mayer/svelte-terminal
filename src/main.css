@@ -1,3 +1,7 @@
 html {
   background-color: #2e3440;
 }
+.glow {
+  color: #a3be8c;
+  text-shadow: 0 0 5px #c8e3b1;
+}

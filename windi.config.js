@@ -18,6 +18,5 @@ export default defineConfig({
   },
   shortcuts: {
     line: " block m-0 overflow-hidden whitespace-pre animate-type",
-    glow: "text-[#A3BE8C] ",
   },
 })

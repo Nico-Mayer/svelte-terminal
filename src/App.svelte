@@ -69,7 +69,7 @@
       content.appendChild(emptyLine())
     } else {
       let child = document.createElement("p")
-      child.innerHTML = `<span class='text-[#B48EAD]' ><span class='text-[#BF616A]'>'${cmd}'</span> is a invalid command, type <span class='text-[#A3BE8C]'>'help'</span> to see a list of available commands.</span>`
+      child.innerHTML = `<span class='text-[#B48EAD]' ><span class='text-[#BF616A]'>'${cmd}'</span> is a invalid command, type <span class='glow'>'help'</span> to see a list of available commands.</span>`
       child.classList.add("line", "pl-4")
       content.appendChild(child)
     }
