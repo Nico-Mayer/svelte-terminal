@@ -1,8 +1,11 @@
 <script>
   // @ts-nocheck
-
   import { onMount } from "svelte"
   import { clickOutside } from "./composables/clickOutside"
+  import { commands } from "./assets/commands"
+
+  // Variables
+
   const banner = [
     " _______  .__                          _____                             ",
     " \\      \\ |__| ____  ____             /     \\ _____  ___.__. ___________ ",
@@ -13,73 +16,61 @@
     "<span class='text-[#EBCB8B]'>Type <span class='glow'>'help'</span> to see a list of available commands</span>",
   ]
   let input
-  let cmd = ""
   let content
+  let cmd = ""
+  let preCmds = []
+  let preCmdsIndex = preCmds.length
   let cmdTitle = "guest@nimawg.com:# ~"
 
-  onMount(() => {
+  // Functions
+
+  function addLine(text, style) {
+    let line = document.createElement("p")
+    line.innerHTML = text
+    line.classList.add(...style)
+    content.appendChild(line)
+  }
+  function renderBanner() {
     for (let i = 0; i < banner.length; i++) {
-      let line = document.createElement("p")
-      line.innerHTML = banner[i]
-      content.appendChild(line)
-
-      line.classList.add("line")
+      if (i == banner.length - 1) {
+        addLine(banner[i], ["line", "mb-8"])
+      } else {
+        addLine(banner[i], ["line"])
+      }
     }
-  })
-
-  function handleClickOutside(event) {
-    input.focus()
-    console.log(input)
   }
 
-  const commands = {
-    help: {
-      output: [
-        "<span class='glow'>whois</span>        Who am I?</span>",
-        "<span class='glow'>projects</span>     View coding projects</span>",
-        "<span class='glow'>clear</span>        Clear terminal</span>",
-      ],
-    },
-    whois: {
-      output: ["you entered whois", "meister ich bins", "ich hoffe es geht"],
-    },
-  }
-
-  function emptyLine() {
-    let empty = document.createElement("p")
-    empty.textContent = " "
-    empty.classList.add("line")
-    return empty
+  function openLink(url) {
+    setTimeout(() => {
+      window.open(url, "_blank").focus()
+    }, 600)
   }
 
   function renderOutput(data) {
-    let prevCmd = document.createElement("p")
-    prevCmd.textContent = `${cmdTitle} ${cmd}`
-    prevCmd.classList.add("m-0", "whitespace-pre")
-    content.appendChild(prevCmd)
+    addLine(`${cmdTitle} ${cmd}`, ["m-0", "whitespace-pre"])
 
     if (data) {
-      content.appendChild(emptyLine())
       for (let i = 0; i < data.output.length; i++) {
-        let child = document.createElement("p")
-        child.innerHTML = data.output[i]
-        content.appendChild(child)
-        child.classList.add("line", "pl-4", "text-[#EBCB8B]")
+        addLine(data.output[i], ["line", "pl-4", "text-[#EBCB8B]"])
       }
-      content.appendChild(emptyLine())
     } else {
-      let child = document.createElement("p")
-      child.innerHTML = `<span class='text-[#B48EAD]' ><span class='text-[#BF616A]'>'${cmd}'</span> is a invalid command, type <span class='glow'>'help'</span> to see a list of available commands.</span>`
-      child.classList.add("line", "pl-4")
-      content.appendChild(child)
+      let t = `<span class='text-[#BF616A]'>'${cmd}'</span> is a invalid command, type <span class='glow'>'help'</span> to see a list of available commands.`
+      addLine(t, ["line", "pl-4", "text-[#B48EAD]", "mb-2"])
     }
   }
 
   function handleInput(e) {
     if (e.key === "Enter") {
+      if (cmd !== "") {
+        preCmds.push(cmd)
+      }
+      preCmdsIndex = 0
       switch (cmd.toLowerCase()) {
         default:
           renderOutput(null)
+          break
+        case "":
+          addLine(`${cmdTitle} ${cmd}`, ["m-0", "whitespace-pre"])
           break
         case "help":
           renderOutput(commands.help)
@@ -87,31 +78,61 @@
         case "whois":
           renderOutput(commands.whois)
           break
+        case "projects":
+          renderOutput(commands.projects)
+          break
+        case "github":
+          renderOutput(commands.github)
+          openLink("https://github.com/Nico-Mayer/svelte-terminal")
+          break
+        case "banner":
+          renderBanner()
+          break
         case "clear":
           content.replaceChildren()
           break
       }
-
+      window.scrollTo(0, document.body.offsetHeight)
       cmd = ""
     }
+    if (e.key === "ArrowUp") {
+      cmd = preCmds[preCmds.length - 1 - preCmdsIndex]
+      if (preCmdsIndex < preCmds.length - 1) {
+        preCmdsIndex += 1
+      }
+    }
+    if (e.key === "ArrowDown") {
+      cmd = preCmds[preCmds.length - preCmdsIndex]
+      if (preCmdsIndex > 0) {
+        preCmdsIndex -= 1
+      } else if (preCmdsIndex == 0) {
+        cmd = ""
+      }
+    }
   }
+
+  // Hooks
+  onMount(() => {
+    renderBanner()
+  })
 </script>
 
 <main>
   <div
     id="mainWindow"
-    class="w-screen font-mono text-[#8FBCBB] leading-tight px-[20px] py-[15px]"
+    class="w-fll font-mono text-[#8FBCBB] leading-tight px-[20px] py-[15px] overflow-x-hidden"
     use:clickOutside
-    on:click_outside={handleClickOutside}
+    on:click={input.focus()}
+    on:click_outside={input.focus()}
   >
     <div id="content" bind:this={content} />
-    <div class="flex">
+    <div class="flex ">
       <span class="">{cmdTitle}</span>
       <input
         bind:value={cmd}
         bind:this={input}
-        on:keypress={handleInput}
-        class="flex flex-1 bg-transparent outline-none pl-4 text-[#5E81AC]"
+        on:keydown={handleInput}
+        class="bg-transparent outline-none pl-4 text-[#5E81AC] "
         type="text"
       />
     </div>
