@@ -3,25 +3,33 @@
   import { onMount } from "svelte"
   import { clickOutside } from "./composables/clickOutside"
   import { commands } from "./assets/commands"
+  import { text } from "svelte/internal"
 
   // Variables
 
   const banner = [
-    " _______  .__                          _____                             ",
-    " \\      \\ |__| ____  ____             /     \\ _____  ___.__. ___________ ",
-    " /   |   \\|  |/ ___\\/  _ \\   ______  /   /  \\__  \\<   |  |/ __ _  __ \\",
-    "/    |    \\  \\  \\__(  <_> ) /_____/ /    Y    \\/ __ \\___  \\  ___/|  | \\/",
-    "\\____|__  /__|\\___  >____/          \\____|__  (____  / ____|\\___  >__|   ",
-    "        \\/        \\/                        \\/     \\/\\/         \\/       ",
-    "<span class='text-[#EBCB8B]'>Type <span class='glow'>'help'</span> to see a list of available commands</span>",
+    "   _____           ____          ______                    _             __",
+    "  / ___/   _____  / / /____     /_  __/__  _________ ___  (_)___  ____ _/ /",
+    "  \\__ \\ | / / _ \\/ / __/ _ \\     / / / _ \\/ ___/ __ `__ \\/ / __ \\/ __ `/ /",
+    " ___/ / |/ /  __/ / /_/  __/    / / /  __/ /  / / / / / / / / / / /_/ / /",
+    "/____/|___/\\___/_/\\__/\\___/    /_/  \\___/_/  /_/ /_/ /_/_/_/ /_/\\__,_/_/",
+    "<span class='text-[#EBCB8B]'>__________________________________________________________________________</span>",
+    "                                                       <span class='glow'>@github/nico-mayer</span>",
+    "<span class='text-[#EBCB8B]'>Type <span class='glow'>'help'</span> to ger a list of all available commands.",
   ]
+
+  let admin = false
   let input
+  let pwInput
   let content
   let cmd = ""
   let preCmds = []
   let preCmdsIndex = preCmds.length
   let cmdTitle = "guest@nimawg.com:# ~"
 
+  let pwMode = false
+  let password = "adminPW"
+  let usrPwInput = ""
   // Functions
 
   function addLine(text, style) {
@@ -30,10 +38,11 @@
     line.classList.add(...style)
     content.appendChild(line)
   }
+
   function renderBanner() {
     for (let i = 0; i < banner.length; i++) {
       if (i == banner.length - 1) {
-        addLine(banner[i], ["line", "mb-8"])
+        addLine(banner[i], ["line", "mb-4"])
       } else {
         addLine(banner[i], ["line"])
       }
@@ -59,9 +68,30 @@
     }
   }
 
+  function handlePwCheck(e) {
+    if (e.key == "Enter") {
+      if (usrPwInput === password) {
+        admin = true
+        cmdTitle = "admin >>>"
+        addLine(" ", ["line"])
+        addLine("admin mode enabeld!", ["line", "text-[#D08770]", "pl-4"])
+        addLine("<span class='glow'>sudo</span> command enabled!", [
+          "line",
+          "pl-4",
+        ])
+        addLine(" ", ["line"])
+      } else {
+        addLine("wrong password", ["line", "text-[#BF616A]"])
+      }
+      pwMode = false
+      usrPwInput = ""
+      setTimeout(() => input.focus(), 1)
+    }
+  }
+
   function handleInput(e) {
     if (e.key === "Enter") {
-      if (cmd !== "") {
+      if (cmd !== "" && preCmds[preCmds.length - 1] !== cmd) {
         preCmds.push(cmd)
       }
       preCmdsIndex = 0
@@ -86,7 +116,34 @@
           openLink("https://github.com/Nico-Mayer/svelte-terminal")
           break
         case "banner":
+          addLine(`${cmdTitle} ${cmd}`, ["line"])
           renderBanner()
+          break
+        case "admin":
+          if (!admin) {
+            addLine(`${cmdTitle} ${cmd}`, ["line"])
+            pwMode = true
+            setTimeout(() => pwInput.focus(), 1)
+          } else {
+            addLine(`${cmdTitle} ${cmd}`, ["line"])
+            addLine("u are already admin", ["line", "pl-4"])
+          }
+
+          break
+        case "sudo":
+          if (admin) {
+            addLine("execute rickroll...", ["line", "glow"])
+            setTimeout(() => {
+              openLink("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            }, 2000)
+          } else {
+            addLine(`${cmdTitle} ${cmd}`, ["line"])
+            addLine("you need admin rights to use this command", [
+              "line",
+              "text-[#BF616A]",
+            ])
+          }
+
           break
         case "clear":
           content.replaceChildren()
@@ -122,19 +179,40 @@
     id="mainWindow"
     class="w-fll font-mono text-[#8FBCBB] leading-tight px-[20px] py-[15px] overflow-x-hidden"
     use:clickOutside
-    on:click={input.focus()}
-    on:click_outside={input.focus()}
+    on:click={() => {
+      if (pwMode) {
+        pwInput.focus()
+      } else input.focus()
+    }}
+    on:click_outside={() => {
+      if (pwMode) {
+        pwInput.focus()
+      } else input.focus()
+    }}
   >
     <div id="content" bind:this={content} />
-    <div class="flex ">
-      <span class="">{cmdTitle}</span>
-      <input
-        bind:value={cmd}
-        bind:this={input}
-        on:keydown={handleInput}
-        class="bg-transparent outline-none pl-4 text-[#5E81AC] "
-        type="text"
-      />
-    </div>
+    {#if !pwMode}
+      <div class="flex ">
+        <span class={admin ? "text-[#D08770]" : ""}>{cmdTitle}</span>
+        <input
+          bind:value={cmd}
+          bind:this={input}
+          on:keydown={handleInput}
+          class="flex flex-1 bg-transparent outline-none pl-4 text-[#A3BE8C] "
+          type="text"
+        />
+      </div>
+    {:else}
+      <div class="flex col">
+        <span>Password:</span>
+        <input
+          bind:value={usrPwInput}
+          bind:this={pwInput}
+          on:keydown={handlePwCheck}
+          class="flex flex-1 bg-transparent outline-none pl-4 text-[#5E81AC] "
+          type="text"
+        />
+      </div>
+    {/if}
   </div>
 </main>

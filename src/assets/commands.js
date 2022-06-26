@@ -6,13 +6,15 @@ export const commands = {
       "<span class='glow'>projects</span>     View coding projects</span>",
       "<span class='glow'>github</span>       View project on GitHub</span>",
       "<span class='glow'>banner</span>       Render the banner</span>",
+      "<span class='glow'>admin</span>        Enter password for amin rights</span>",
       "<span class='glow'>clear</span>        Clear terminal</span>",
       " ",
     ],
   },
   whois: {
-    output: ["you entered whois", "meister ich bins", "ich hoffe es geht"],
+    output: [" ", "Hi Guys, im Nico", " "],
   },
+
   projects: {
     output: [
       " ",
