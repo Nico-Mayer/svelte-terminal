@@ -18,5 +18,6 @@ export default defineConfig({
   },
   shortcuts: {
     line: " block m-0 overflow-hidden whitespace-pre animate-type",
+    link: "underline text-[#5E81AC]",
   },
 })

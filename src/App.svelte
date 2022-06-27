@@ -3,21 +3,13 @@
   import { onMount } from "svelte"
   import { clickOutside } from "./composables/clickOutside"
   import { commands } from "./assets/commands"
-  import { text } from "svelte/internal"
+  import { banner, art } from "./assets/asciiArt.js"
+
+  for (let row = 0; row < art.length; row++) {
+    console.log("%c" + art[row], "color:green")
+  }
 
   // Variables
-
-  const banner = [
-    "   _____           ____          ______                    _             __",
-    "  / ___/   _____  / / /____     /_  __/__  _________ ___  (_)___  ____ _/ /",
-    "  \\__ \\ | / / _ \\/ / __/ _ \\     / / / _ \\/ ___/ __ `__ \\/ / __ \\/ __ `/ /",
-    " ___/ / |/ /  __/ / /_/  __/    / / /  __/ /  / / / / / / / / / / /_/ / /",
-    "/____/|___/\\___/_/\\__/\\___/    /_/  \\___/_/  /_/ /_/ /_/_/_/ /_/\\__,_/_/",
-    "<span class='text-[#81A1C1]'>__________________________________________________________________________</span>",
-    "                                                       <span class='glow'>@github/nico-mayer</span>",
-    "<span class='text-[#EBCB8B]'>Type <span class='glow'>'help'</span> to ger a list of all available commands.",
-  ]
-
   let admin = false
   let input
   let pwInput
@@ -26,12 +18,22 @@
   let preCmds = []
   let preCmdsIndex = preCmds.length
   let cmdTitle = "guest@nimawg.com:# ~"
+  let pokemon
 
   let pwMode = false
-  let password = "adminPW"
+  const password = import.meta.env.VITE_PASSWORD
+  const passwordDE = import.meta.env.VITE_PASSWORD_DE
   let usrPwInput = ""
 
   // Functions
+
+  async function fetchPokemon() {
+    let id = Math.floor(Math.random() * 150)
+    let url = `https://pokeapi.co/api/v2/pokemon/${id}/`
+    const res = await fetch(url)
+    const data = await res.json()
+    pokemon = data
+  }
 
   function addLine(text, style) {
     let line = document.createElement("p")
@@ -62,18 +64,18 @@
         addLine(data.output[i], ["line", "pl-4", "text-[#EBCB8B]"])
       }
     } else {
-      let t = `<span class='text-[#BF616A]'>'${cmd}'</span> is a invalid command, type <span class='glow'>'help'</span> to see a list of available commands.`
-      addLine(t, ["line", "pl-4", "text-[#B48EAD]"])
+      let t = `<span class='text-[#BF616A]'>'${cmd}'</span> is not valid, type <span class='glow'>'help'</span> to see a list of available commands.`
+      addLine(t, ["line", , "text-[#B48EAD]"])
     }
   }
 
   function handlePwCheck(e) {
     if (e.key == "Enter") {
-      if (usrPwInput === password) {
+      if (usrPwInput === password || usrPwInput === passwordDE) {
         admin = true
         cmdTitle = "admin >>>"
         addLine(" ", ["line"])
-        addLine("admin mode enabeld!", ["line", "text-[#D08770]", "pl-4"])
+        addLine("Admin mode enabeld!", ["line", "text-[#EBCB8B]", "pl-4"])
         addLine("<span class='glow'>sudo</span> command enabled!", [
           "line",
           "pl-4",
@@ -94,8 +96,10 @@
         preCmds.push(cmd)
       }
       preCmdsIndex = 0
-      addLine(`${cmdTitle} ${cmd}`, ["line"])
-      switch (cmd.toLowerCase()) {
+      addLine(`${cmdTitle} <span class="text-[#A3BE8C]">${cmd}</span>`, [
+        "line",
+      ])
+      switch (cmd.toLowerCase().trim()) {
         default:
           renderOutput(null)
           break
@@ -104,7 +108,7 @@
         case "help":
           renderOutput(commands.help)
           break
-        case "whois":
+        case "whoami":
           renderOutput(commands.whois)
           break
         case "projects":
@@ -116,6 +120,40 @@
           break
         case "banner":
           renderBanner()
+          break
+        case "pokemon":
+          console.log(pokemon)
+          addLine(
+            "<span class='text-[#B48EAD]'>NAME:</span>    " + pokemon.name,
+            ["line", "ml-4", "text-[#EBCB8B]"]
+          )
+          addLine(
+            "<span class='text-[#B48EAD]'>ID:</span>      " + pokemon.id,
+            ["line", "ml-4", "text-[#EBCB8B]"]
+          )
+          addLine(
+            "<span class='text-[#B48EAD]'>WEIGTH:</span>  " +
+              pokemon.weight / 10 +
+              " kg",
+            ["line", "ml-4", "text-[#EBCB8B]"]
+          )
+          addLine(
+            "<span class='text-[#B48EAD]'>HEIGHT:</span>  " +
+              pokemon.height / 10 +
+              " m",
+            ["line", "ml-4", "text-[#EBCB8B]"]
+          )
+          let types = ""
+          for (let i = 0; i < pokemon.types.length; i++) {
+            types += pokemon.types[i].type.name + " "
+          }
+
+          addLine("<span class='text-[#B48EAD]'>TYPE:</span>    " + types, [
+            "line",
+            "ml-4",
+            "text-[#EBCB8B]",
+          ])
+          fetchPokemon()
           break
         case "admin":
           if (!admin) {
@@ -131,7 +169,7 @@
             addLine("execute rickroll...", ["line", "glow", "pl-4"])
             setTimeout(() => {
               openLink("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-            }, 2000)
+            }, 1000)
           } else {
             addLine("you need admin rights to use this command", [
               "line",
@@ -167,6 +205,7 @@
   // Hooks
   onMount(() => {
     renderBanner()
+    fetchPokemon()
   })
 </script>
 
@@ -189,7 +228,7 @@
     <div id="content" bind:this={content} />
     {#if !pwMode}
       <div class="flex ">
-        <span class={admin ? "text-[#D08770]" : ""}>{cmdTitle}</span>
+        <span>{cmdTitle}</span>
         <input
           bind:value={cmd}
           bind:this={input}
@@ -209,6 +248,9 @@
           type="password"
         />
       </div>
+      <p class="opacity-50 text-[#D8DEE9]">
+        hint: search where to find the bugs
+      </p>
     {/if}
   </div>
 </main>
